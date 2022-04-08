@@ -62,10 +62,13 @@ struct ContentView: View {
 
 struct BoardView : View {
     
-    //@Binding var message : String
+    /// This is the network variable in order to communicate with the server
     @State var network : NetworkSupport
+    /// Score will be updated if the tile contains a treasure
     @State var score = 0
+    /// board is the board that displays all the tiles
     @StateObject var board = Board()
+    /// foundTreasure will be changed to true
     @State var foundTreasure = false
     @State var serverResponse = ""
     @State var turn = false
@@ -83,6 +86,10 @@ struct BoardView : View {
         GridItem(.flexible())
     ]
     
+    /// This is the board view that displays the board of treasures for the player's to make guess attempts on
+    /// The board is initialized and each tile is displayed with a filled circle
+    /// if the response from the server is a found treasure, then the tile will change to a face.smiling icon, else it will display a x.circle
+    /// onChange will only be executed when there is a response from the server
     var body: some View {
         VStack {
             Text("Score: " + String(score))
@@ -97,20 +104,24 @@ struct BoardView : View {
                                 score += 1
                             }
                             else {
-                                tile.image = "x.cirle"
+                                tile.image = "x.circle"
                             }
                         }
+                        .disabled(!turn)
                     }
                 }
-            }.allowsHitTesting(turn)
+            }
         }.onChange(of: network.incomingMessage) { newValue in
             // Handle the incoming message here.  This could be a request for the board state, or could be a move (row col)
             // Note that if the same incomingMessage is sent twice, this call will not trigger; it is only called on change
+            print("NEWVALUE: " +  newValue)
             turn = true
             serverResponse = newValue
         }
     }
     
+    /// Evaluates the message that the server sends back, the server will send back a message beginning with "Found" if the tile contains a treasure
+    /// PARAMETERS: message is a String that is the message sent back from the server based on the user's guess attempt
     func evaluateMessage(message: String) -> Bool {
         turn = false
         if (message.uppercased().starts(with: "F")) {
