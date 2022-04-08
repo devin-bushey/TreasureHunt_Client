@@ -110,10 +110,11 @@ struct BoardView : View {
             if (newValue == "You are Player 1 ... waiting for Player 2"){
                 isPlayer1 = true
             }
-            if (newValue.hasSuffix("Is it player 1's turn? true")) {
+            
+            if (isPlayer1 && newValue.suffix(2) == "ue"){
                 turn = true
             }
-            if (newValue.hasSuffix("Is it player 2's turn? true")) {
+            else if (!isPlayer1 && newValue.suffix(2) == "se"){
                 turn = true
             }
 
