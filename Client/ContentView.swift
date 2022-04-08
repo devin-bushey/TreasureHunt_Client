@@ -18,17 +18,18 @@ struct ContentView: View {
     var numRows = 5
     var numTreasures = 5
     
+    @State var isPlayer1 = false
+    
     var body: some View {
         VStack {
             if !networkSupport.connected {
-                TextField("Message", text: $message)
-                    .multilineTextAlignment(.center)
-                
+
                 List ($networkSupport.peers, id: \.self) {
                     $peer in
                     Button(peer.displayName) {
                         do {
                             try networkSupport.contactPeer(peerID: peer, request: Request(details: message))
+                            
                             
                         }
                         catch let error {
@@ -39,19 +40,9 @@ struct ContentView: View {
             }
             else {
                 
-
-                TextField("Message", text: $outgoingMessage)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                
-                Button("Send") {
-                    networkSupport.send(message: outgoingMessage)
-                    outgoingMessage = ""
-                }
-                .padding()
                 Text(networkSupport.incomingMessage)
                     .padding()
-                BoardView(network: networkSupport)
+                BoardView(network: networkSupport, isPlayer1: isPlayer1)
    
             }
         }
@@ -72,6 +63,8 @@ struct BoardView : View {
     @State var foundTreasure = false
     @State var serverResponse = ""
     @State var turn = false
+    
+    @State var isPlayer1: Bool
     
     let columns = [
         GridItem(.flexible()),
@@ -114,15 +107,24 @@ struct BoardView : View {
         }.onChange(of: network.incomingMessage) { newValue in
             // Handle the incoming message here.  This could be a request for the board state, or could be a move (row col)
             // Note that if the same incomingMessage is sent twice, this call will not trigger; it is only called on change
+            if (newValue == "You are Player 1 ... waiting for Player 2"){
+                isPlayer1 = true
+            }
+            print("********** IsPlayer 1?? " + String(isPlayer1))
             print("NEWVALUE: " +  newValue)
             turn = true
             serverResponse = newValue
+            
         }
     }
     
     /// Evaluates the message that the server sends back, the server will send back a message beginning with "Found" if the tile contains a treasure
     /// PARAMETERS: message is a String that is the message sent back from the server based on the user's guess attempt
     func evaluateMessage(message: String) -> Bool {
+        
+        
+        
+        
         turn = false
         if (message.uppercased().starts(with: "F")) {
             return true
