@@ -12,6 +12,7 @@ struct ClientApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+            //ContentView( grid: [Tile])
         }
     }
 }
