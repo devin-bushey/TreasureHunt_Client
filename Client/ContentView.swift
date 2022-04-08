@@ -68,6 +68,7 @@ struct BoardView : View {
     @StateObject var board = Board()
     @State var foundTreasure = false
     @State var serverResponse = ""
+    @State var turn = false
     
     let columns = [
         GridItem(.flexible()),
@@ -93,6 +94,7 @@ struct BoardView : View {
                             let response = evaluateMessage(message: serverResponse)
                             if (response) {
                                 tile.image = "face.smiling"
+                                score += 1
                             }
                             else {
                                 tile.image = "x.cirle"
@@ -100,15 +102,17 @@ struct BoardView : View {
                         }
                     }
                 }
-            }
+            }.allowsHitTesting(turn)
         }.onChange(of: network.incomingMessage) { newValue in
             // Handle the incoming message here.  This could be a request for the board state, or could be a move (row col)
             // Note that if the same incomingMessage is sent twice, this call will not trigger; it is only called on change
+            turn = true
             serverResponse = newValue
         }
     }
     
     func evaluateMessage(message: String) -> Bool {
+        turn = false
         if (message.uppercased().starts(with: "F")) {
             return true
         }
