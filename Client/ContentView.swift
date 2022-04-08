@@ -66,6 +66,8 @@ struct BoardView : View {
     @State var network : NetworkSupport
     @State var score = 0
     @StateObject var board = Board()
+    @State var foundTreasure = false
+    @State var serverResponse = ""
     
     let columns = [
         GridItem(.flexible()),
@@ -86,18 +88,33 @@ struct BoardView : View {
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach($board.tiles, id: \.self) { $tiles in
                     ForEach($tiles, id: \.self) { $tile in
-                        Image(systemName: "circle.fill").onTapGesture {
+                        Image(systemName: tile.image).onTapGesture {
                             network.send(message: tile.location)
-                            evaluateMessage(message: network.incomingMessage)
+                            let response = evaluateMessage(message: serverResponse)
+                            if (response) {
+                                tile.image = "face.smiling"
+                            }
+                            else {
+                                tile.image = "x.cirle"
+                            }
                         }
                     }
                 }
             }
+        }.onChange(of: network.incomingMessage) { newValue in
+            // Handle the incoming message here.  This could be a request for the board state, or could be a move (row col)
+            // Note that if the same incomingMessage is sent twice, this call will not trigger; it is only called on change
+            serverResponse = newValue
         }
     }
     
-    func evaluateMessage(message: String) {
-        print(message)
+    func evaluateMessage(message: String) -> Bool {
+        if (message.uppercased().starts(with: "F")) {
+            return true
+        }
+        else {
+            return false
+        }
     }
 }
 
@@ -133,11 +150,13 @@ struct TileRow : View {
         var id = UUID()
         var x : Int
         var y : Int
+        var image : String
         var location : String
         
         init(x: Int, y: Int) {
             self.x = x
             self.y = y
+            self.image = "circle.fill"
             self.location = String(self.x) + "," +  String(self.y)
         }
     }
