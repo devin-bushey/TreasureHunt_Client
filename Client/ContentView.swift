@@ -110,9 +110,13 @@ struct BoardView : View {
             if (newValue == "You are Player 1 ... waiting for Player 2"){
                 isPlayer1 = true
             }
-            print("********** IsPlayer 1?? " + String(isPlayer1))
-            print("NEWVALUE: " +  newValue)
-            turn = true
+            if (newValue.hasSuffix("Is it player 1's turn? true")) {
+                turn = true
+            }
+            if (newValue.hasSuffix("Is it player 2's turn? true")) {
+                turn = true
+            }
+
             serverResponse = newValue
             
         }
@@ -121,10 +125,6 @@ struct BoardView : View {
     /// Evaluates the message that the server sends back, the server will send back a message beginning with "Found" if the tile contains a treasure
     /// PARAMETERS: message is a String that is the message sent back from the server based on the user's guess attempt
     func evaluateMessage(message: String) -> Bool {
-        
-        
-        
-        
         turn = false
         if (message.uppercased().starts(with: "F")) {
             return true
